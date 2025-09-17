@@ -35,8 +35,8 @@ Memastikan virtual environment menyala
 9. cek lagi laman apakah berfungsi dengan baik di local host
 10. push ke pws dan memastikan laman berfungsi dengan baik 
 
-Screenshot postman json
-![alt text](image/Screenshot 2025-09-17 113701.png)
-
 Screenshot postman xml
-![alt text](image/Screenshot 2025-09-17 113708.png)
+![alt text](image-1.png)
+
+Screenshot postman json
+![alt text](image.png)
