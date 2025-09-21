@@ -30,3 +30,11 @@ class Product(models.Model):
     def increment_views(self):
         self.product_views += 1
         self.save()
+
+class Seller(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    seller_name = models.CharField(max_length=255)
+    email_seller = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.title
