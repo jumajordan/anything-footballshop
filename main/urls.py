@@ -11,4 +11,5 @@ urlpatterns = [
     path('xml/<str:product_id>/', show_xml_by_id, name='show_xml_by_id'),
     path('json/<str:product_id>/', show_json_by_id, name='show_json_by_id'),
     path('createseller/', create_seller, name="create_seller")
+    
 ]
