@@ -3,6 +3,12 @@
 <p><a href="{% url 'main:show_main' %}"><button>← Back to Beranda</button></a></p>
 
 <h1>{{ product.product_name }}</h1>
+{% if product.user %}
+    <p>Seller: {{ product.user.username }}</p>
+{% else %}
+    <p>Seller: Anonymous</p>
+{% endif %}
+
 <p><b>{{ product.get_category_display }}</b>{% if product.in_stock %} | 
     <b>In Stock</b>{% endif %}{% if product.is_product_trend %} | 
     <b>Trend</b>{% endif %} | <i>{{ product.created_at|date:"d M Y, H:i" }}</i> 
@@ -16,5 +22,6 @@
 {% load humanize %}
 <h3>Rp {{ product.price|intcomma }}</h3>
 <p>{{ product.description }}</p>
+
 
 {% endblock content %}
