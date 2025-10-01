@@ -16,24 +16,29 @@ from django.urls import reverse
 @login_required(login_url='/login')
 def show_main(request):
     filter_type = request.GET.get("filter", "all")
-    if filter_type == "all":
-        product_list = Product.objects.all()
-    else:
+    category = request.GET.get("category")
+
+    if filter_type == "my":
         product_list = Product.objects.filter(user=request.user)
-    
+    else:
+        product_list = Product.objects.all()
+
+    if category:
+        product_list = product_list.filter(category=category)
+
     seller_list = Seller.objects.all()
     context = {
-        
-        'first' : 'What Do You Want to Buy?',
+        'first': 'What Do You Want to Buy?',
         'shop': 'Enter the shop',
         'desc': 'In this shop you will find everything about football',
         'aboutme': 'Juma Jordan Bimo, 2406435843',
-        'product_list' : product_list,
-        'seller_list' : seller_list,
-        'last_login': request.COOKIES.get('last_login', 'Never')
+        'product_list': product_list,
+        'seller_list': seller_list,
+        'last_login': request.COOKIES.get('last_login', 'Never'),
+        'CATEGORY_CHOICES': Product.CATEGORY_CHOICES,
     }
-
     return render(request, "main.html", context)
+
 
 def register(request):
     form = UserCreationForm()
@@ -105,18 +110,6 @@ def show_product(request, id):
     }
 
     return render(request, "product_detail.html", context)
-
-def show_product_by_cat(request):
-    category = request.GET.get("category")
-    if category:
-        product_list = Product.objects.filter(category=category)
-    else:
-        product_list = Product.objects.all()
-
-    return render(request, "main.html", {
-        "product_list": product_list,
-        "CATEGORY_CHOICES": Product.CATEGORY_CHOICES,  
-    })
 
 def edit_product(request, id):
     product = get_object_or_404(Product, pk=id)
