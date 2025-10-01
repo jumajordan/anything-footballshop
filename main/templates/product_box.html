@@ -1,0 +1,48 @@
+{# product_box.html #}
+<div class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+  <div class="p-4">
+    {% if product.image %}
+      <div class="w-full h-48 mb-4">
+        <img src="{{ product.image }}" alt="{{ product.product_name }}" class="w-full h-full object-cover rounded">
+      </div>
+    {% endif %}
+
+    <h2 class="text-xl font-semibold text-gray-900 mb-1">
+      <a href="{% url 'main:show_product' product.id %}" class="hover:underline">
+        {{ product.product_name }}
+      </a>
+    </h2>
+
+    <p class="text-sm text-gray-600 mb-2">
+      <b>{{ product.get_category_display }}</b>
+      {% if product.in_stock %} | <span class="text-green-600 font-medium">In Stock</span>{% endif %}
+      {% if product.is_product_trend %} | <span class="text-yellow-600 font-medium">Trend</span>{% endif %}
+    </p>
+
+    <p class="text-sm text-gray-500 mb-3">
+      <i>{{ product.created_at|date:"d M Y H:i" }}</i> &nbsp;|&nbsp; Views: {{ product.product_views }}
+    </p>
+
+    {% load humanize %}
+    <div class="text-lg font-bold text-gray-900 mb-2">Rp {{ product.price|intcomma }}</div>
+
+    <p class="text-gray-700 mb-4">{{ product.description|truncatewords:25 }}{% if product.description|length > 0 %}...{% endif %}</p>
+
+    <p class="text-sm text-gray-600 mb-4">
+      {% if product.user %}
+        <b>Seller:</b> {{ product.user.username }}
+      {% else %}
+        <b>Seller:</b> Anonymous
+      {% endif %}
+    </p>
+
+    <div class="flex items-center space-x-3">
+      <a href="{% url 'main:show_product' product.id %}" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-sm hover:bg-gray-50">See Product</a>
+
+      {% if user.is_authenticated and product.user == user %}
+        <a href="{% url 'main:edit_product' product.pk %}" class="px-3 py-2 bg-yellow-100 border border-yellow-300 rounded-md text-sm hover:bg-yellow-200">Edit</a>
+        <a href="{% url 'main:delete_product' product.pk %}" class="px-3 py-2 bg-red-100 border border-red-300 rounded-md text-sm hover:bg-red-200">Delete</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
