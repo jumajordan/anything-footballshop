@@ -16,10 +16,14 @@ from django.urls import reverse
 @login_required(login_url='/login')
 def show_main(request):
     filter_type = request.GET.get("filter", "all")
+
     if filter_type == "all":
         product_list = Product.objects.all()
+    elif filter_type == "expensive":
+        product_list = Product.objects.filter(price__gt = 500000) # gt itu greater than
     else:
         product_list = Product.objects.filter(user=request.user)
+
     
     seller_list = Seller.objects.all()
     context = {
