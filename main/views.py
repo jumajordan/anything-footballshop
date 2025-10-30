@@ -4,40 +4,43 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from main.forms import ProductForm, SellerForm
 from main.models import Product, Seller
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.core import serializers
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
 from django.urls import reverse
-
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django.utils.html import strip_tags
 
 
 # Create your views here.
 @login_required(login_url='/login')
 def show_main(request):
     filter_type = request.GET.get("filter", "all")
+    category = request.GET.get("category")
 
-    if filter_type == "all":
-        product_list = Product.objects.all()
-    elif filter_type == "expensive":
-        product_list = Product.objects.filter(price__gt = 500000) # gt itu greater than
-    else:
+    if filter_type == "my":
         product_list = Product.objects.filter(user=request.user)
+    else:
+        product_list = Product.objects.all()
 
-    
+    if category:
+        product_list = product_list.filter(category=category)
+
     seller_list = Seller.objects.all()
     context = {
-        
-        'first' : 'What Do You Want to Buy?',
+        'first': 'What Do You Want to Buy?',
         'shop': 'Enter the shop',
         'desc': 'In this shop you will find everything about football',
         'aboutme': 'Juma Jordan Bimo, 2406435843',
-        'product_list' : product_list,
-        'seller_list' : seller_list,
-        'last_login': request.COOKIES.get('last_login', 'Never')
+        'product_list': product_list,
+        'seller_list': seller_list,
+        'last_login': request.COOKIES.get('last_login', 'Never'),
+        'CATEGORY_CHOICES': Product.CATEGORY_CHOICES,
     }
-
     return render(request, "main.html", context)
+
 
 def register(request):
     form = UserCreationForm()
@@ -84,6 +87,30 @@ def create_product(request):
     context = {'form': form}
     return render(request, "create_product.html", context)
 
+@csrf_exempt
+@require_POST
+def add_product_entry_ajax(request):
+    product_name = strip_tags(request.POST.get("product_name"))
+    description = strip_tags(request.POST.get("description"))
+    category = request.POST.get("category")
+    price = request.POST.get("price")
+    image = request.POST.get("image")
+    in_stock = request.POST.get("in_stock") == 'on'  # checkbox handling
+    user = request.user
+
+    new_product = Product(
+        product_name=product_name,
+        description=description,
+        category=category,
+        price=price,
+        image=image,
+        in_stock=in_stock,
+        user=user
+    )
+    new_product.save()
+
+    return HttpResponse(b"CREATED", status=201)
+
 def create_seller(request):
     form = SellerForm(request.POST or None)
 
@@ -110,18 +137,6 @@ def show_product(request, id):
 
     return render(request, "product_detail.html", context)
 
-def show_product_by_cat(request):
-    category = request.GET.get("category")
-    if category:
-        product_list = Product.objects.filter(category=category)
-    else:
-        product_list = Product.objects.all()
-
-    return render(request, "main.html", {
-        "product_list": product_list,
-        "CATEGORY_CHOICES": Product.CATEGORY_CHOICES,  
-    })
-
 def edit_product(request, id):
     product = get_object_or_404(Product, pk=id)
     form = ProductForm(request.POST or None, instance=product)
@@ -146,9 +161,26 @@ def show_xml(request):
      return HttpResponse(xml_data, content_type="application/xml")
 
 def show_json(request):
-    product_list = Product.objects.all()
-    json_data = serializers.serialize("json", product_list)
-    return HttpResponse(json_data, content_type="application/json")
+    try:
+        product_list = Product.objects.all()
+        data = [
+            {
+                'id': str(product.id),
+                'product_name': product.product_name,
+                'description': product.description,
+                'category': product.category,
+                'image': product.image,
+                'product_views': product.product_views,
+                'created_at': product.created_at.isoformat() if product.created_at else None,
+                'in_stock': product.in_stock,
+                'price': str(product.price),
+                'user_id': product.user,
+            }
+            for product in product_list
+        ]
+        return JsonResponse(data, safe=False)
+    except Product.DoesNotExist:
+            return JsonResponse({'detail': 'Not found'}, status=404)
 
 def show_xml_by_id(request, product_id):
     try:
