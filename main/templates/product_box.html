@@ -23,8 +23,13 @@
       <i>{{ product.created_at|date:"d M Y H:i" }}</i> &nbsp;|&nbsp; Views: {{ product.product_views }}
     </p>
 
+    {% if product.price > 500000 %}
+      {% load humanize %}
+    <div class="text-lg font-bold text-red-900 mb-2">Rp {{ product.price|intcomma }}</div>
+    {% else %}
     {% load humanize %}
     <div class="text-lg font-bold text-gray-900 mb-2">Rp {{ product.price|intcomma }}</div>
+    {% endif %}
 
     <p class="text-gray-700 mb-4">{{ product.description|truncatewords:25 }}{% if product.description|length > 0 %}...{% endif %}</p>
 

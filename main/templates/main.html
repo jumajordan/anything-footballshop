@@ -35,6 +35,9 @@
           class="{% if request.GET.filter == 'my' %} bg-green-600 text-white{% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-green-600 hover:text-white">
           My Products
         </a>
+        <a href="?filter=expensive" class="{% if request.GET.filter == 'expensive' %} bg-green-600 text-white{% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-green-600 hover:text-white">
+          Filter Expensive
+        </a>
       </div>
 
       <div class="flex items-center space-x-3">
