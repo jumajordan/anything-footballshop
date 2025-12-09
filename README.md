@@ -2,48 +2,63 @@ LINK DEPLOY: https://juma-jordan-anythingfootballshop.pbp.cs.ui.ac.id/
 NAMA: Juma Jordan Bimo Simanjuntak
 NPM: 2406435843
 
-## 1. Prioritas Pengambilan CSS Selector
-Urutan prioritas ketika browser menentukan style:
-1. **Importance**: aturan dengan `!important` akan selalu menang.
-2. **Origin**: urutan prioritas style dari author, user, dan default browser.
-3. **Specificity**: semakin spesifik selector, semakin tinggi prioritasnya.
-   - Inline style > ID > Class/attribute/pseudo-class > Element/pseudo-element.
-4. **Source Order**: jika semua sama, aturan yang ditulis terakhir akan digunakan.
+## 1. Perbedaan: Synchronous vs Asynchronous Request
+
+### Synchronous request
+
+Klien (browser) mengirim request ke server dan menunggu seluruh respons sebelum bisa melakukan aksi lain pada konteks tersebut.
+Pada aplikasi web tradisional, pengiriman form atau navigasi halaman sering bersifat synchronous: browser memuat ulang halaman (full page reload).
+Dampak: user menunggu selama round-trip; interaksi terasa blok sampai server merespons.
+
+### Asynchronous request
+
+Klien mengirim request tetapi tidak memblokir UI — JavaScript dapat menangani respons ketika tersedia.
+Umumnya menggunakan API seperti XMLHttpRequest atau fetch (dikenal sebagai AJAX: Asynchronous JavaScript And XML, walau payload modern biasanya JSON).
+Dampak: partial update (hanya sebagian halaman yang diubah), interaksi terasa lebih responsif.
+
 
 ---
 
-## 2. Responsive Design
-**Mengapa penting:**
-- Menyesuaikan tampilan di berbagai ukuran layar (mobile, tablet, desktop).
-- Meningkatkan pengalaman pengguna dan keterbacaan.
-- Mendukung SEO dan performa.
-- Mengurangi biaya maintenance karena hanya satu basis kode.
+## 2. Bagaimana AJAX bekerja di Django — alur request–response
 
-**Contoh:**
-- Aplikasi dengan responsive design: layanan besar seperti e-commerce, sosial media, dan mesin pencari.
-- Aplikasi tanpa responsive design: aplikasi lama/legacy atau sistem internal yang dibuat hanya untuk desktop.
+- Event pemicu di klien: pengguna klik tombol, submit form dicegah (event.preventDefault()), atau otomatis di background.
 
----
+- JavaScript mengirim request: memakai fetch() atau XMLHttpRequest ke endpoint Django (biasanya URL yang mengembalikan JSON). Sertakan header X-CSRFToken untuk POST/PUT/DELETE bila CSRF diperlukan. Gunakan Content-Type: application/json bila mengirim JSON.
 
-## 3. Margin, Border, Padding
-- **Margin**: ruang di luar elemen, memisahkan dengan elemen lain.
-- **Border**: garis pembatas yang mengelilingi elemen.
-- **Padding**: ruang di dalam elemen, antara konten dan border.
+- Django menerima request: URL routing -> view. Jika view dibangun untuk AJAX, biasanya mengembalikan JsonResponse atau HttpResponse dengan kode status yang sesuai.
+Proses otentikasi/validasi/penyimpanan tetap dilakukan di server (server always trusted).
+
+- Client menerima respons: JavaScript mem-parse JSON dan melakukan DOM update (menyisipkan HTML partial, menampilkan pesan, redirect, dll). Bisa menampilkan spinner/loader selama menunggu.
+
+- Progressive enhancement & fallback: Biasanya sediakan fallback HTML form tradisional agar tetap bekerja apabila JavaScript disabled.
 
 ---
 
-## 4. Flexbox & Grid Layout
-- **Flexbox**: sistem layout satu dimensi (baris atau kolom). Cocok untuk mengatur alignment horizontal/vertikal dan distribusi ruang antar elemen.
-- **Grid**: sistem layout dua dimensi (baris dan kolom). Cocok untuk membuat layout halaman kompleks atau grid produk.
+## 3. Keuntungan menggunakan AJAX dibandingkan render biasa (full render) di Django
+
+- Respons lebih cepat (perceived performance): hanya partial content yang diambil, bukan seluruh HTML.
+
+- Pengalaman pengguna lebih mulus: tidak ada full page reload, sehingga state UI (mis. posisi scroll, data form yang tidak berubah) bisa dipertahankan.
+
+- Interaksi dinamis: inline validation, autocomplete, live search, infinite scrolling, update konten real-time.
+
+- Hemat bandwidth: hanya data yang diperlukan (JSON) dikirim, bukan template lengkap.
 
 
-## 5. Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial).
+---
 
-1. Pertama-tama saya menambahkan fungsi edit, delete product di views.py, mengedit urls.py dan membuat page htmlnya 
-2. kemudian saya mendeklarasikan bahwa saya akan menggunakan css tailwind, di base.html
-3. saya menambahkan category di fungsi show main di views.py karena navigation bar perlu menampilkan kategori
-4. saya membuat file html khusus untuk navigation bar bernama navbar.html dan dihubungkan dengan main.html
-5. Saya membuat file html product_box untuk membuat kotak untuk setiap product di main 
-6. Saya mengedit semua file html jadi menggunakan css untuk styling 
-7. memastikan styling berjalan dengan baik
-8. push git ke pws dan github
+## 4. Keamanan saat menggunakan AJAX untuk Login & Register di Django
+- CSRF protection: Django menyediakan CSRF protection built-in. Untuk request berbasis AJAX yang mengubah state (POST/PUT/DELETE), pastikan mengirim token CSRF.
+- Transport layer security (HTTPS): Selalu gunakan HTTPS; jangan kirim kredensial lewat koneksi tidak terenkripsi.
+- Autentikasi dan sesi: Jika menggunakan session cookies, pastikan HttpOnly, Secure, dan SameSite di-set dengan benar. Jika menggunakan token, simpan token aman (jangan simpan token sensitif di localStorage jika risiko XSS tinggi)
+
+
+## Bagaimana AJAX mempengaruhi UX (User Experience)
+
+- Performa terasa lebih cepat: pengambilan data partial membuat respons terasa instan.
+
+- Interaksi lebih halus: tidak ada flicker full page reload; animasi dan transisi bisa dipertahankan.
+
+- Fitur interaktif: live validation, auto-save, infinite scroll, real-time update.
+
+- Kontrol UI yang lebih besar: developer bisa menampilkan state loading, success, atau inline error lebih baik.

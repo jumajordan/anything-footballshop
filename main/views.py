@@ -192,8 +192,23 @@ def show_xml_by_id(request, product_id):
     
 def show_json_by_id(request, product_id):
     try:
-        product_item = Product.objects.filter(pk=product_id)
-        json_data = serializers.serialize("json", product_item)
-        return HttpResponse(json_data, content_type="application/json")
-    except Product.DoesNotExist:   
-        return HttpResponse(status=404)
+        product = Product.objects.get(pk=product_id)
+
+        data = {
+            "id": str(product.id),
+            "product_name": product.product_name,
+            "description": product.description,
+            "category": product.category,
+            "image": product.image,
+            "product_views": product.product_views,
+            "created_at": product.created_at.isoformat() if product.created_at else None,
+            "in_stock": product.in_stock,
+            "is_product_trend": product.is_product_trend,
+            "price": float(product.price),
+            "user_username": product.user.username if product.user else None
+        }
+
+        return JsonResponse(data)
+
+    except Product.DoesNotExist:
+        return JsonResponse({"detail": "Not found"}, status=404)
