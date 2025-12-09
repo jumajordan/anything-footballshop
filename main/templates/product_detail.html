@@ -6,197 +6,201 @@
 {% endblock meta %}
 
 {% block content %}
-<div class="bg-gray-50 w-full min-h-screen">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+{% include 'navbar.html' %}
 
-    <!-- Back Navigation -->
-    <div class="mb-6">
-      <a href="{% url 'main:show_main' %}" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">
-        ← Back to Products
-      </a>
-    </div>
+<div class="w-full min-h-screen bg-white pt-24 pb-12">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-    <!-- LOADING -->
-    <div id="loading-state" class="bg-white rounded-lg border border-gray-200 p-12 text-center">
-      <svg class="animate-spin h-8 w-8 text-green-600 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none"
-        viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-      </svg>
-      <p class="text-gray-600 mt-3">Loading product details...</p>
-    </div>
+    <nav class="flex text-sm text-gray-500 mb-6 space-x-2">
+      <a href="{% url 'main:show_main' %}" class="hover:text-green-600">Home</a>
+      <span>/</span>
+      <span class="capitalize">{{ product.category }}</span>
+      <span>/</span>
+      <span class="text-gray-900 truncate max-w-[200px]">{{ product.product_name }}</span>
+    </nav>
 
-    <!-- ERROR -->
-    <div id="error-state" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
-      <div class="text-red-500 text-5xl mb-4">⚠️</div>
-      <h3 class="text-lg font-medium text-gray-900 mb-2">Failed to load product</h3>
-      <p class="text-gray-500">Please try again later.</p>
-    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-    <!-- PRODUCT CONTENT -->
-    <article id="product-content" class="bg-white rounded-lg border border-gray-200 overflow-hidden hidden">
-
-      <!-- Header -->
-      <div class="p-6 sm:p-8">
-        <div id="badges-container" class="flex flex-wrap items-center gap-2 mb-4"></div>
-
-        <h1 id="product-title" class="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-4"></h1>
-
-        <div id="product-price" class="text-2xl font-semibold text-green-600"></div>
-      </div>
-
-      <!-- Seller -->
-      <div class="px-6 sm:px-8">
-        <p class="text-sm text-gray-500 mb-1">Seller</p>
-        <p id="seller-name" class="font-medium text-gray-900"></p>
-      </div>
-
-      <!-- Image -->
-      <div id="product-image-container" class="px-6 sm:px-8 mt-4">
-        <img id="product-image" class="w-full h-64 sm:h-80 lg:h-96 object-cover rounded-lg border hidden" />
-        <div id="no-image" class="w-full h-64 sm:h-80 lg:h-96 flex items-center justify-center bg-gray-100 text-gray-400 rounded-lg hidden">
-          No Image Available
+      <div class="lg:col-span-4">
+        <div class="sticky top-28">
+          <div class="rounded-xl overflow-hidden border border-gray-200 relative aspect-square group">
+            {% if product.image %}
+              <img src="{{ product.image }}" alt="{{ product.product_name }}" 
+                   class="w-full h-full object-contain bg-gray-50">
+            {% else %}
+              <div class="w-full h-full flex items-center justify-center bg-gray-50 text-gray-300">
+                <svg class="w-20 h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+            {% endif %}
+            
+            {% if product.is_product_trend %}
+              <div class="absolute top-4 left-4 bg-yellow-400 text-white text-xs font-bold px-2 py-1 rounded shadow-sm">
+                TRENDING
+              </div>
+            {% endif %}
+          </div>
         </div>
       </div>
 
-      <!-- Description -->
-      <div class="p-6 sm:p-8">
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Deskripsi Produk</h3>
-        <div id="product-description"
-          class="text-gray-700 leading-relaxed whitespace-pre-line text-base sm:text-lg">
+      <div class="lg:col-span-5 flex flex-col space-y-4">
+        
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900 leading-snug">
+          {{ product.product_name }}
+        </h1>
+
+        <div class="text-3xl font-bold text-gray-900">
+          Rp {{ product.price|intcomma }}
+        </div>
+
+        <hr class="border-gray-100 my-2">
+
+        <div>
+          <p class="text-sm font-semibold text-gray-900 mb-2">Kategori Terpilih:</p>
+          <span class="inline-block px-4 py-2 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm font-medium capitalize">
+            {{ product.category }}
+          </span>
+        </div>
+
+        <hr class="border-gray-100 my-2">
+
+        <div class="border-b border-gray-200">
+          <ul class="flex space-x-6 text-sm font-medium text-gray-500">
+            <li class="pb-3 border-b-2 border-green-600 text-green-600 cursor-pointer">Detail</li>
+          </ul>
+        </div>
+
+        <div class="text-gray-700 text-sm leading-relaxed whitespace-pre-line pt-2">
+          {{ product.description }}
+          
+          <p class="mt-4 text-gray-500 text-xs">
+            Kondisi: <span class="text-gray-900 font-medium">Baru</span><br>
+            Min. Pemesanan: <span class="text-gray-900 font-medium">1 Buah</span>
+          </p>
+        </div>
+
+        <div class="border-t border-gray-200 pt-4 mt-4">
+          <div class="flex items-center space-x-3">
+            <div class="w-12 h-12 bg-gradient-to-tr from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+              {{ product.user.username|slice:":1"|upper }}
+            </div>
+            
+            <div>
+              <div class="flex items-center gap-2">
+                <p class="text-base font-bold text-gray-900 capitalize">{{ product.user.username }}</p>
+              </div>
+              <p class="text-xs text-gray-500 mt-0.5">
+                <span class="text-green-600 font-semibold">• Online</span> 
+                <span class="mx-1">|</span> 
+                Total Produk: {{ product.user.product_set.count }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="lg:col-span-3">
+        <div class="sticky top-28 border border-gray-200 rounded-xl p-4 shadow-sm bg-white">
+          <h3 class="font-bold text-gray-900 mb-4">Atur jumlah dan catatan</h3>
+          
+          <div class="flex items-center space-x-2 mb-4">
+            <div class="flex items-center border border-gray-300 rounded overflow-hidden">
+                <button class="px-3 py-1 bg-gray-50 text-gray-400 hover:bg-gray-100">-</button>
+                <input type="text" value="1" class="w-12 text-center text-sm border-none focus:ring-0" readonly>
+                <button class="px-3 py-1 bg-gray-50 text-green-600 hover:bg-gray-100">+</button>
+            </div>
+            <span class="text-sm text-gray-500">
+               Stok: <span class="font-bold text-gray-800">{% if product.in_stock %}Tersedia{% else %}Habis{% endif %}</span>
+            </span>
+          </div>
+
+          <div class="flex justify-between items-center mb-6">
+            <span class="text-gray-500 text-sm">Subtotal</span>
+            <span class="text-lg font-bold text-gray-900">Rp {{ product.price|intcomma }}</span>
+          </div>
+
+          <div class="flex flex-col space-y-3">
+            
+            {% if user.is_authenticated and product.user == user %}
+                <a href="{% url 'main:edit_product' product.pk %}" 
+                   class="block w-full text-center py-2.5 rounded-lg border border-green-600 text-green-600 font-bold text-sm hover:bg-green-50 transition">
+                   Edit Produk
+                </a>
+                <a href="{% url 'main:delete_product' product.pk %}" 
+                   onclick="return confirm('Hapus produk ini?');"
+                   class="block w-full text-center py-2.5 rounded-lg bg-red-50 text-red-600 font-bold text-sm hover:bg-red-100 transition">
+                   Hapus Produk
+                </a>
+            {% else %}
+                {% if product.in_stock %}
+                  <button class="block w-full py-2.5 rounded-lg border border-green-600 text-green-600 bg-white font-bold text-sm hover:bg-green-50 transition">
+                    Beli Langsung
+                  </button>
+                {% else %}
+                  <button disabled class="block w-full py-2.5 rounded-lg bg-gray-300 text-white font-bold text-sm cursor-not-allowed">
+                    Stok Habis
+                  </button>
+                {% endif %}
+            {% endif %}
+            
+          </div>
+          
         </div>
       </div>
 
-      <!-- Footer -->
-      <div class="border-t border-gray-200 p-6 sm:p-8 bg-gray-50 flex items-center justify-between flex-wrap gap-4">
-        {% if user.is_authenticated and product.user == user %}
-        <div class="flex space-x-3">
-          <a href="{% url 'main:edit_product' product.pk %}"
-            class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md text-sm font-medium transition-colors">
-            Edit
-          </a>
-          <a href="{% url 'main:delete_product' product.pk %}"
-            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium transition-colors"
-            onclick="return confirm('Are you sure you want to delete this product?');">
-            Delete
-          </a>
-        </div>
-        {% else %}
-        <button
-          class="w-full md:w-auto px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg text-base font-semibold transition-colors">
-          Beli Sekarang
-        </button>
-        {% endif %}
-      </div>
-
-    </article>
+    </div>
   </div>
 </div>
 
+
 <script>
-  const PRODUCT_ID = "{{ product.id }}";
-  const PRODUCT_DETAIL_ENDPOINT = `{% url 'main:show_json_by_id' '00000000-0000-0000-0000-000000000000' %}`
-    .replace('00000000-0000-0000-0000-000000000000', PRODUCT_ID);
+  const rawPrice = parseFloat("{{ product.price }}");
+  const priceDisplay = document.getElementById('display-price');
+  const subtotalDisplay = document.getElementById('subtotal');
+  const qtyInput = document.getElementById('qty-input');
+  const btnMinus = document.getElementById('btn-minus');
 
-  // DOM Elements (BENAR & AMAN)
-  const loadingState = document.getElementById('loading-state');
-  const errorState = document.getElementById('error-state');
-  const productContent = document.getElementById('product-content');
-
-  const badgesContainer = document.getElementById('badges-container');
-  const productTitle = document.getElementById('product-title');
-  const productPrice = document.getElementById('product-price');
-  const productImage = document.getElementById('product-image');
-  const productDescription = document.getElementById('product-description');
-  const sellerName = document.getElementById('seller-name');
-
-  const noImage = document.getElementById('no-image');
-
-  function showState(state) {
-    loadingState.classList.toggle('hidden', state !== 'loading');
-    errorState.classList.toggle('hidden', state !== 'error');
-    productContent.classList.toggle('hidden', state !== 'ready');
+  // Format angka ke format Rupiah (tanpa Rp)
+  function formatRupiah(number) {
+    return new Intl.NumberFormat('id-ID').format(number);
   }
 
-  function getCategoryLabel(code) {
-    const map = {
-      jersey: 'Jersey',
-      shoes: 'Shoes',
-      equipment: 'Equipment',
-      accessories: 'Accessories',
-      other: 'Other',
-    };
-    return map[code] || code;
-  }
+  // Set initial price view
+  priceDisplay.textContent = formatRupiah(rawPrice);
+  
+  function updateQty(change) {
+    let currentQty = parseInt(qtyInput.value);
+    let newQty = currentQty + change;
 
-  function renderProduct(product) {
-    document.title = `${product.product_name} - Anything Football Shop`;
-    productTitle.textContent = product.product_name;
-    productPrice.textContent = `Rp ${Number(product.price).toLocaleString('id-ID')}`;
-    sellerName.textContent = product.user_username || 'Anonymous';
+    // Minimal 1
+    if (newQty < 1) return;
 
-    // Badges
-    badgesContainer.innerHTML = '';
+    // Update Input
+    qtyInput.value = newQty;
 
-    if (product.category) {
-      const catBadge = document.createElement('span');
-      catBadge.className = 'inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-blue-600 text-white';
-      catBadge.textContent = getCategoryLabel(product.category);
-      badgesContainer.appendChild(catBadge);
-    }
-
-    const stockBadge = document.createElement('span');
-    stockBadge.className = `inline-flex items-center px-3 py-1 rounded-md text-sm font-medium ${
-      product.in_stock ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-    }`;
-    stockBadge.textContent = product.in_stock ? 'In Stock' : 'Out of Stock';
-    badgesContainer.appendChild(stockBadge);
-
-    if (product.is_product_trend) {
-      const trendBadge = document.createElement('span');
-      trendBadge.className = 'inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-yellow-100 text-yellow-700';
-      trendBadge.textContent = 'Trend';
-      badgesContainer.appendChild(trendBadge);
-    }
-
-    // Image
-    if (product.image) {
-      productImage.src = product.image;
-      productImage.alt = product.product_name;
-      productImage.classList.remove('hidden');
-      noImage.classList.add('hidden');
+    // Update Button State
+    if (newQty === 1) {
+       btnMinus.classList.add('text-gray-300');
+       btnMinus.classList.remove('text-gray-500', 'hover:text-green-600');
     } else {
-      productImage.classList.add('hidden');
-      noImage.classList.remove('hidden');
+       btnMinus.classList.remove('text-gray-300');
+       btnMinus.classList.add('text-gray-500', 'hover:text-green-600');
     }
 
-    productDescription.textContent = product.description || 'No description available.';
+    // Update Subtotal
+    updateSubtotal(newQty);
   }
 
-  async function loadProductDetail() {
-    try {
-      showState('loading');
-
-      const response = await fetch(PRODUCT_DETAIL_ENDPOINT, {
-        headers: { Accept: 'application/json' },
-      });
-
-      if (!response.ok) throw new Error('Failed to fetch product detail');
-
-      const raw = await response.json();
-      const product = raw[0].fields;
-      product.id = raw[0].pk;
-      product.user_username = raw[0].fields.user;
-
-      renderProduct(product);
-      showState('ready');
-    } catch (err) {
-      console.error('Error loading product detail:', err);
-      showState('error');
-    }
+  function updateSubtotal(qty) {
+    const total = rawPrice * qty;
+    subtotalDisplay.textContent = formatRupiah(total);
   }
 
-  loadProductDetail();
+  // Init Subtotal
+  updateSubtotal(1);
+
 </script>
 
 {% endblock content %}

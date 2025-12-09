@@ -128,15 +128,9 @@ def show_seller_xml(request):
     xml_data = serializers.serialize("xml", seller_list)
     return HttpResponse(xml_data, content="application/xml")
 
-@login_required(login_url='/login')
 def show_product(request, id):
-    product = get_object_or_404(Product, pk=id)
-    product.increment_views()
-
-    context = {
-        'product': product
-    }
-
+    product = get_object_or_404(Product, pk=id) # Data lengkap diambil disini
+    context = { 'product': product }
     return render(request, "product_detail.html", context)
 
 def edit_product(request, id):
