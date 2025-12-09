@@ -1,4 +1,5 @@
 import datetime
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -12,6 +13,7 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.utils.html import strip_tags
+from django.contrib.auth.models import User
 
 
 # Create your views here.
@@ -161,26 +163,13 @@ def show_xml(request):
      return HttpResponse(xml_data, content_type="application/xml")
 
 def show_json(request):
-    try:
-        product_list = Product.objects.all()
-        data = [
-            {
-                'id': str(product.id),
-                'product_name': product.product_name,
-                'description': product.description,
-                'category': product.category,
-                'image': product.image,
-                'product_views': product.product_views,
-                'created_at': product.created_at.isoformat() if product.created_at else None,
-                'in_stock': product.in_stock,
-                'price': str(product.price),
-                'user_id': product.user,
-            }
-            for product in product_list
-        ]
-        return JsonResponse(data, safe=False)
-    except Product.DoesNotExist:
-            return JsonResponse({'detail': 'Not found'}, status=404)
+    # Filter hanya user yang login (sesuai checklist soal)
+    if request.user.is_authenticated:
+        product_list = Product.objects.filter(user=request.user)
+    else:
+        product_list = Product.objects.none()
+        
+    return HttpResponse(serializers.serialize("json", product_list), content_type="application/json")
 
 def show_xml_by_id(request, product_id):
     try:
@@ -192,23 +181,56 @@ def show_xml_by_id(request, product_id):
     
 def show_json_by_id(request, product_id):
     try:
-        product = Product.objects.get(pk=product_id)
+        product_item = Product.objects.filter(pk=product_id)
+        json_data = serializers.serialize("json", product_item)
+        return HttpResponse(json_data, content_type="application/json")
+    except Product.DoesNotExist:   
+        return HttpResponse(status=404)
+    
+@csrf_exempt
+def login_mobile(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
 
-        data = {
-            "id": str(product.id),
-            "product_name": product.product_name,
-            "description": product.description,
-            "category": product.category,
-            "image": product.image,
-            "product_views": product.product_views,
-            "created_at": product.created_at.isoformat() if product.created_at else None,
-            "in_stock": product.in_stock,
-            "is_product_trend": product.is_product_trend,
-            "price": float(product.price),
-            "user_username": product.user.username if product.user else None
-        }
+        user = authenticate(request, username=username, password=password)
 
-        return JsonResponse(data)
+        if user is not None:
+            login(request, user)
+            return JsonResponse({
+                "status": True,
+                "message": "Login berhasil!",
+                "username": username,
+            }, status=200)
+        else:
+            return JsonResponse({
+                "status": False,
+                "message": "Username atau password salah.",
+            }, status=401)
+    
+    return JsonResponse({"status": False, "message": "Method not allowed"}, status=405)
 
-    except Product.DoesNotExist:
-        return JsonResponse({"detail": "Not found"}, status=404)
+@csrf_exempt
+def logout_mobile(request):
+    logout(request)
+    return JsonResponse({"status": True, "message": "Logout berhasil!"}, status=200)
+
+@csrf_exempt
+def register_mobile(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+        
+        # Cek apakah user sudah ada
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({"status": False, "message": "Username sudah digunakan"}, status=400)
+        
+        # Buat user baru
+        user = User.objects.create_user(username=username, password=password)
+        user.save()
+        
+        return JsonResponse({"status": True, "message": "Akun berhasil dibuat!"}, status=200)
+        
+    return JsonResponse({"status": False, "message": "Method not allowed"}, status=405)
